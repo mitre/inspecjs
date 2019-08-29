@@ -1,8 +1,8 @@
 // Import all of our parsers
 // V 1.0
-import * as EXEC_JSON_1_0 from "./generated-parsers/exec-json";
-import * as EXEC_JSON_MIN_1_0 from "./generated-parsers/exec-jsonmin";
-import * as PROFILE_JSON_1_0 from "./generated-parsers/profile-json";
+import * as EXEC_JSON_1_0 from "./generated_parsers/exec-json";
+import * as EXEC_JSON_MIN_1_0 from "./generated_parsers/exec-jsonmin";
+import * as PROFILE_JSON_1_0 from "./generated_parsers/profile-json";
 
 // TODO: Any future versions
 

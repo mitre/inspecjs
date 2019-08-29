@@ -2,11 +2,11 @@
  * A lot of information/behaviour is shared between the profile and result version so we use a single abstract superclass
  */
 
-import { ExecJSONControl as ResultControl_1_0 } from "../generated-parsers/exec-json";
-import { ProfileJSONControl as ProfileControl_1_0 } from "../generated-parsers/profile-json";
-import { ControlResult as ControlResult_1_0 } from "../generated-parsers/exec-json";
+import { ExecJSONControl as ResultControl_1_0 } from "../generated_parsers/exec-json";
+import { ProfileJSONControl as ProfileControl_1_0 } from "../generated_parsers/profile-json";
+import { ControlResult as ControlResult_1_0 } from "../generated_parsers/exec-json";
 
-import { HDFControl, ControlStatus, Severity, ResultStatus } from "../compat-wrappers";
+import { HDFControl, ControlStatus, Severity, ResultStatus } from "../compat_wrappers";
 
 abstract class HDFControl_1_0 implements HDFControl {
     // We use this as a reference
