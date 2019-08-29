@@ -40,9 +40,6 @@ export function convertFile(json_text: string): ConversionResult {
         return result;
     } catch(e){ console.log(e)/* Don't care */ }
 
-    // 1.*
-    // ...
-
     throw "Unable to convert inspec json output. Please verify it's from an up-to-date version of the program!";
 }
 
