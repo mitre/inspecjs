@@ -6,6 +6,7 @@
 //
 // These functions will throw an error if the JSON doesn't
 // match the expected interface, even if the JSON is valid.
+import preprocess from "../preprocessor";
 
 export interface ProfileJSON {
     controls:         ProfileJSONControl[];
@@ -14,11 +15,11 @@ export interface ProfileJSON {
     depends?:         Dependency[];
     generator?:       Generator;
     groups:           ControlGroup[];
-    inputs:           { [key: string]: any }[];
+    inputs?:          { [key: string]: any }[];
     maintainer?:      string;
     name:             string;
     sha256:           string;
-    status:           string;
+    status?:          string;
     supports:         SupportedPlatform[];
     title?:           string;
 }
@@ -28,9 +29,9 @@ export interface ProfileJSONControl {
      * The raw source code of the control. Note that if this is an overlay control, it does not
      * include the underlying source code
      */
-    code:         string;
-    desc:         null | string;
-    descriptions: { [key: string]: any };
+    code:          string;
+    desc:          null | string;
+    descriptions?: { [key: string]: any };
     /**
      * The ID of this control
      */
@@ -110,7 +111,7 @@ export interface SupportedPlatform {
 // and asserts the results of JSON.parse at runtime
 export class Convert {
     public static toProfileJSON(json: string): ProfileJSON {
-        return cast(JSON.parse(json), r("ProfileJSON"));
+        return cast(preprocess(json), r("ProfileJSON"));
     }
 
     public static profileJSONToJson(value: ProfileJSON): string {
@@ -255,18 +256,18 @@ const typeMap: any = {
         { json: "depends", js: "depends", typ: u(undefined, a(r("Dependency"))) },
         { json: "generator", js: "generator", typ: u(undefined, r("Generator")) },
         { json: "groups", js: "groups", typ: a(r("ControlGroup")) },
-        { json: "inputs", js: "inputs", typ: a(m("any")) },
+        { json: "inputs", js: "inputs", typ: u(undefined, a(m("any"))) },
         { json: "maintainer", js: "maintainer", typ: u(undefined, "") },
         { json: "name", js: "name", typ: "" },
         { json: "sha256", js: "sha256", typ: "" },
-        { json: "status", js: "status", typ: "" },
+        { json: "status", js: "status", typ: u(undefined, "") },
         { json: "supports", js: "supports", typ: a(r("SupportedPlatform")) },
         { json: "title", js: "title", typ: u(undefined, "") },
     ], "any"),
     "ProfileJSONControl": o([
         { json: "code", js: "code", typ: "" },
         { json: "desc", js: "desc", typ: u(null, "") },
-        { json: "descriptions", js: "descriptions", typ: m("any") },
+        { json: "descriptions", js: "descriptions", typ: u(undefined, m("any")) },
         { json: "id", js: "id", typ: "" },
         { json: "impact", js: "impact", typ: 3.14 },
         { json: "refs", js: "refs", typ: a(r("Reference")) },

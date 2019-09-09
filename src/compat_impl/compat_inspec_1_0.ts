@@ -1,4 +1,4 @@
-/** Implementation for the "base" 1.0 inspec output schema 
+/** Implementation for the "base" 1.0 inspec output schema
  * A lot of information/behaviour is shared between the profile and result version so we use a single abstract superclass
  */
 
@@ -6,7 +6,13 @@ import { ExecJSONControl as ResultControl_1_0 } from "../generated_parsers/exec-
 import { ProfileJSONControl as ProfileControl_1_0 } from "../generated_parsers/profile-json";
 import { ControlResult as ControlResult_1_0 } from "../generated_parsers/exec-json";
 
-import { HDFControl, ControlStatus, Severity, ResultStatus } from "../compat_wrappers";
+import {
+    HDFControl,
+    ControlStatus,
+    Severity,
+    SegmentStatus,
+    HDFControlSegment,
+} from "../compat_wrappers";
 
 abstract class HDFControl_1_0 implements HDFControl {
     // We use this as a reference
@@ -21,9 +27,7 @@ abstract class HDFControl_1_0 implements HDFControl {
             case "skipped":
                 return `SKIPPED -- ${r.skip_message}\n`;
             case "failed":
-                return `FAILED -- Test: ${r.code_desc}\nMessage: ${
-                    r.message
-                }\n`;
+                return `FAILED -- Test: ${r.code_desc}\nMessage: ${r.message}\n`;
             case "passed":
                 return `PASSED -- ${r.code_desc}\n"`;
             case "error":
@@ -36,9 +40,9 @@ abstract class HDFControl_1_0 implements HDFControl {
     // Abstracts
     abstract get message(): string;
 
-    get nist_tags(): string[]  {
+    get nist_tags(): string[] {
         let fetched: string[] | undefined = this.wraps.tags["nist"];
-        if(fetched == null || fetched.length === 0) {
+        if (fetched == null || fetched.length === 0) {
             return ["UM-1"];
         } else {
             return fetched;
@@ -48,48 +52,28 @@ abstract class HDFControl_1_0 implements HDFControl {
     get fixed_nist_tags(): string[] {
         const tags = this.nist_tags;
 
-        // Otherwise, filter to only those that follow format @@-#, 
+        // Otherwise, filter to only those that follow format @@-#,
         // where @ is any capital letter, and # is any number (1 or more digits)
         const pattern = /[A-Z][A-Z]-[0-9]+/;
         let results: string[] = [];
         tags.forEach(tag => {
             let finding = tag.match(pattern);
-            if(finding !== null && !results.includes(finding[0])) {
+            if (finding !== null && !results.includes(finding[0])) {
                 results.push(finding[0]);
             }
         });
         return results;
     }
 
-    /**
-     * TODO: Document
-     */
-    get vuln_num(): string {
-        // We truncate the id based up to its first decimal (as far as I can tell - update later)
-        if (this.wraps.id.match(/\d+\.\d+/)) {
-            let match = this.vuln_num.match(/\d+(\.\d+)*/);
-            if (match) {
-                return match[0];
-            }
-        }
-        return this.wraps.id;
-    }
-
     get finding_details(): string {
         let result = "";
         switch (this.status) {
             case "Failed":
-                return `One or more of the automated tests failed or was inconclusive for the control:\n\n${
-                    this.message
-                }\n`;
+                return `One or more of the automated tests failed or was inconclusive for the control:\n\n${this.message}\n`;
             case "Passed":
-                return `All Automated tests passed for the control:\n\n${
-                    this.message
-                }\n`;
+                return `All Automated tests passed for the control:\n\n${this.message}\n`;
             case "Not Reviewed":
-                return `Automated test skipped due to known accepted condition in the control:\n\n${
-                    this.message
-                }\n`;
+                return `Automated test skipped due to known accepted condition in the control:\n\n${this.message}\n`;
             case "Not Applicable":
                 return `Justification:\n\n${this.message}\n`;
             case "Profile Error":
@@ -99,15 +83,14 @@ abstract class HDFControl_1_0 implements HDFControl {
                     return `No test available for this control.`;
                 }
             case "From Profile":
-                return "No tests are run in a profile json."
+                return "No tests are run in a profile json.";
             case "No Data":
-                return "This control had no results - perhaps it was overlayed?"
+                return "This control had no results - perhaps it was overlayed?";
 
             default:
                 throw "Error: invalid status generated";
         }
     }
-
 
     get severity(): Severity {
         if (this.wraps.impact < 0.1) {
@@ -123,7 +106,36 @@ abstract class HDFControl_1_0 implements HDFControl {
         }
     }
 
-    abstract get status(): ControlStatus;
+    get status_list(): SegmentStatus[] | undefined {
+        if (this.segments !== undefined) {
+            return this.segments.map(s => s.status);
+        }
+    }
+
+    get status(): ControlStatus {
+        if (this.status_list === undefined) {
+            return "From Profile";
+        } else if (this.status_list.includes("error")) {
+            return "Profile Error";
+        } else {
+            if (this.status_list.length == 0) {
+                return "No Data";
+            } else if (this.wraps.impact == 0) {
+                return "Not Applicable";
+            } else if (this.status_list.includes("failed")) {
+                return "Failed";
+            } else if (this.status_list.includes("passed")) {
+                return "Passed";
+            } else if (this.status_list.includes("skipped")) {
+                return "Not Reviewed";
+            } else {
+                return "Profile Error";
+            }
+        }
+    }
+
+    abstract get segments(): HDFControlSegment[] | undefined;
+    abstract get is_profile(): boolean;
 }
 
 export class ExecControl extends HDFControl_1_0 implements HDFControl {
@@ -155,45 +167,33 @@ export class ExecControl extends HDFControl_1_0 implements HDFControl {
         return undefined;
     }
 
-    get status_list(): ResultStatus[] {
-        return this.typed_wrap.results.map(cr => {
-            if(cr.backtrace !== undefined) {
-                return "error";
-            } else {
-                return cr.status;
-            }
+    get segments(): HDFControlSegment[] {
+        return this.typed_wrap.results.map(result => {
+            return {
+                status: result.status || "no_status",
+                message: result.message,
+                code_desc: result.code_desc,
+                skip_message: result.skip_message,
+                exception: result.exception,
+                backtrace: result.backtrace,
+                start_time: result.start_time,
+                run_time: result.run_time,
+                resource: result.resource,
+            };
         });
     }
 
-    get status(): ControlStatus {
-        if (this.status_list.includes("error")) {
-            return "Profile Error";
-        } else {
-            if (this.status_list.length == 0) {
-                return "No Data";
-            } else if (this.wraps.impact == 0) {
-                return "Not Applicable";
-            } else if (this.status_list.includes("failed")) {
-                return "Failed";
-            } else if (this.status_list.includes("passed")) {
-                return "Passed";
-            } else if (this.status_list.includes("skipped")) {
-                return "Not Reviewed";
-            } else {
-                return "Profile Error";
-            }
-        }
-    }
+    readonly is_profile: boolean = false;
 }
 
 export class ProfileControl extends HDFControl_1_0 implements HDFControl {
-    constructor(control: ProfileControl_1_0){
+    constructor(control: ProfileControl_1_0) {
         super(control);
     }
 
-    // Helper to cast
-    private get typed_wrap(): ResultControl_1_0 {
-        return this.wraps as ResultControl_1_0;
+    // Helper to save us having to do (this.wraps as ProfileControl) everywehre. We know the type
+    private get typed_wrap(): ProfileControl_1_0 {
+        return this.wraps as ProfileControl_1_0;
     }
 
     get message(): string {
@@ -201,7 +201,6 @@ export class ProfileControl extends HDFControl_1_0 implements HDFControl {
         return this.typed_wrap.desc || "No message found.";
     }
 
-    get status(): ControlStatus {
-        return "From Profile";
-    }
+    readonly is_profile: boolean = false;
+    readonly segments: undefined;
 }

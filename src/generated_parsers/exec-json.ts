@@ -6,6 +6,7 @@
 //
 // These functions will throw an error if the JSON doesn't
 // match the expected interface, even if the JSON is valid.
+import preprocess from "../preprocessor";
 
 export interface ExecJSON {
     platform:   Platform;
@@ -41,7 +42,7 @@ export interface ExecJSONProfile {
     parent_profile?:  string;
     sha256:           string;
     skip_message?:    string;
-    status:           string;
+    status?:          string;
     summary?:         string;
     supports:         SupportedPlatform[];
     title?:           string;
@@ -53,9 +54,9 @@ export interface ExecJSONControl {
      * The raw source code of the control. Note that if this is an overlay control, it does not
      * include the underlying source code
      */
-    code:         string;
-    desc:         null | string;
-    descriptions: ControlDescription[];
+    code:          string;
+    desc:          null | string;
+    descriptions?: ControlDescription[];
     /**
      * The ID of this control
      */
@@ -97,7 +98,7 @@ export interface ControlResult {
     run_time:      number;
     skip_message?: string;
     start_time:    string;
-    status:        ControlResultStatus;
+    status?:       ControlResultStatus;
 }
 
 export enum ControlResultStatus {
@@ -185,7 +186,7 @@ export interface StatisticBlock {
 // and asserts the results of JSON.parse at runtime
 export class Convert {
     public static toExecJSON(json: string): ExecJSON {
-        return cast(JSON.parse(json), r("ExecJSON"));
+        return cast(preprocess(json), r("ExecJSON"));
     }
 
     public static execJSONToJson(value: ExecJSON): string {
@@ -349,7 +350,7 @@ const typeMap: any = {
         { json: "parent_profile", js: "parent_profile", typ: u(undefined, "") },
         { json: "sha256", js: "sha256", typ: "" },
         { json: "skip_message", js: "skip_message", typ: u(undefined, "") },
-        { json: "status", js: "status", typ: "" },
+        { json: "status", js: "status", typ: u(undefined, "") },
         { json: "summary", js: "summary", typ: u(undefined, "") },
         { json: "supports", js: "supports", typ: a(r("SupportedPlatform")) },
         { json: "title", js: "title", typ: u(undefined, "") },
@@ -358,7 +359,7 @@ const typeMap: any = {
     "ExecJSONControl": o([
         { json: "code", js: "code", typ: "" },
         { json: "desc", js: "desc", typ: u(null, "") },
-        { json: "descriptions", js: "descriptions", typ: a(r("ControlDescription")) },
+        { json: "descriptions", js: "descriptions", typ: u(undefined, a(r("ControlDescription"))) },
         { json: "id", js: "id", typ: "" },
         { json: "impact", js: "impact", typ: 3.14 },
         { json: "refs", js: "refs", typ: a(r("Reference")) },
@@ -385,7 +386,7 @@ const typeMap: any = {
         { json: "run_time", js: "run_time", typ: 3.14 },
         { json: "skip_message", js: "skip_message", typ: u(undefined, "") },
         { json: "start_time", js: "start_time", typ: "" },
-        { json: "status", js: "status", typ: r("ControlResultStatus") },
+        { json: "status", js: "status", typ: u(undefined, r("ControlResultStatus")) },
     ], "any"),
     "SourceLocation": o([
         { json: "line", js: "line", typ: 3.14 },

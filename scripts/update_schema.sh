@@ -26,21 +26,21 @@ done
 # Quicktype each
 echo "Generating types"
 mkdir -p "./work/interfaces"
-mkdir -p "./src/generated_parsers/$VERSION"
+mkdir -p "./../generated_parsers/$VERSION"
 for SCHEMA in ${SCHEMAS[@]}
 do
     # Generate the parser
-    OUTFILE="./src/generated_parsers/$VERSION/$SCHEMA.ts"
+    OUTFILE="./../generated_parsers/$VERSION/$SCHEMA.ts"
     npx quicktype -l ts -s schema --src "./work/schemas/$VERSION/$SCHEMA.json" -o $OUTFILE --runtime-typecheck
 
     # Modify it to utilize a null filter parser
     # Add the import
     sed -e '9i\
-    import preprocess from "@/preprocessor";' -i '' $OUTFILE
+    import preprocess from "../preprocessor";' -i '' $OUTFILE
     # Add the call in stead of JSON.parse
     sed -e 's/return cast(JSON.parse(json)/return cast(preprocess(json)/' -i '' $OUTFILE
 
-    # npx quicktype -l ts -s schema --src "./work/schemas/$VERSION/$SCHEMA.json" -o "./src/generated_parsers/$VERSION/$SCHEMA.ts"  --runtime-typecheck --all-properties-optional
+    # npx quicktype -l ts -s schema --src "./work/schemas/$VERSION/$SCHEMA.json" -o "./../generated_parsers/$VERSION/$SCHEMA.ts"  --runtime-typecheck --all-properties-optional
 done
 
 # Remove work directory trash

@@ -1,8 +1,10 @@
 import { ExecJSONControl as ResultControl_1_0 } from "./generated_parsers/exec-json";
 import { ProfileJSONControl as ProfileControl_1_0 } from "./generated_parsers/profile-json";
-import { ProfileControl as HDFProfileControl_1_0, ExecControl as HDFExecControl_1_0 } from "./compat_impl/compat_inspec_1_0";
+import {
+    ProfileControl as HDFProfileControl_1_0,
+    ExecControl as HDFExecControl_1_0,
+} from "./compat_impl/compat_inspec_1_0";
 import * as parsetypes from "./fileparse";
-import { setFlagsFromString } from "v8";
 
 // These types are used throughout for control/result status and impact
 
@@ -16,14 +18,14 @@ import { setFlagsFromString } from "v8";
  * Else, if it contains an "error" amidst its status list, it is "Profile Error"
  * Else, if it contains a "failed" amidst its status list, it is "Failed"
  * Else, if it contains a "passed" amidst its status list, it is "Passed"
- * Else, if it contains a "skipped" amidst its status list, it is "Not Reviewed". 
+ * Else, if it contains a "skipped" amidst its status list, it is "Not Reviewed".
  * Note that the "Not Reviewed" case implicitly means ALL of its statuses are "skipped"
  * These cases are in theory comprehensive, but if somehow no apply, it is still Profile Error
  */
 export type ControlStatus =
-    "Not Applicable"
-    | "From Profile"    
-    | "No Data"         
+    | "Not Applicable"
+    | "From Profile"
+    | "No Data"
     | "Profile Error"
     | "Passed"
     | "Failed"
@@ -38,8 +40,8 @@ export type ControlStatus =
  */
 export type Severity = "none" | "low" | "medium" | "high" | "critical";
 
-/** The statuses that a PART of a control (IE a describe block) might have. */
-export type ResultStatus = "passed" | "failed" | "skipped" | "error";
+/** The statuses that a segment of a control (IE a describe block) might have. */
+export type SegmentStatus = "passed" | "failed" | "skipped" | "error" | "no_status";
 
 /**
  * This interface acts as a polyfill on controls for our HDF "guaranteed" derived types, to provide a stable
@@ -55,11 +57,6 @@ export interface HDFControl {
      * Get the control status as computed for the entire control.
      */
     status: ControlStatus;
-
-    /**
-     * TODO: Document whatever the hell this actually is
-     */
-    vuln_num: string;
 
     severity: Severity;
 
@@ -95,16 +92,65 @@ export interface HDFControl {
      */
     start_time?: string;
 
-    /** Get the results of this control's `describe` blocks as a list.
-     * If no tests were run, (it is a profile-json or has no tests) returns undefined
+    /** Get the results of this control's control segments  as a list.
+     * If no tests were run, (this is a profile-json) returns undefined.
+     * Can be empty in the rare case that no control segments exist/were run.
      */
-    status_list?: ResultStatus[];
+    status_list?: SegmentStatus[];
+
+    /**
+     * Access the segments of this control in HDF format.
+     * If no tests were run, (this is a profile-json) returns undefined.
+     */
+    segments?: HDFControlSegment[];
+
+    /** Easy check if this is a profile */
+    is_profile: boolean;
 }
 
 /**
- * Wrapper to guarantee HDF properties on a control
+ * Represents a single describe blocks execution in our test,
+ * and data related to its execution
+ */
+export interface HDFControlSegment {
+    /** The result of this particular segment */
+    status: SegmentStatus;
+
+    /** The message that inspec produced describing this segment's result */
+    message?: string;
+
+    /** The description of this particular segment */
+    code_desc: string;
+
+    /** A message describing why this segment was skipped (if it was skipped) */
+    skip_message?: string;
+
+    /** A string describing the error/exception this segment encountered (if one was encountered) */
+    exception?: string;
+
+    /** A line by line trace of where this.exception occurred */
+    backtrace?: string[];
+
+    /** The start time of this segment, in format
+     *
+     * yyyy-mm-ddThh:mm:ss+|-HH:MM
+     *
+     * Where yyyy is year, mm d=month, dd day, hh hour, mm minute, ss second,
+     * plus or minus HH:MM s the time zone offset.
+     */
+    start_time: string;
+
+    /** The run time of this segment, in seconds */
+    run_time: number;
+
+    /** Which inspec resource this control used, if one could be determined */
+    resource?: string;
+}
+
+/**
+ * Wrapper to guarantee certain HDF properties on a control, or at least provide
+ * type safed accessors.
  *
- * TODO: Figure out if/how we want to error out when a polyfill is impossible
  * @param ctrl The control to polyfill
  */
 export function hdfWrapControl(ctrl: parsetypes.AnyFullControl): HDFControl {

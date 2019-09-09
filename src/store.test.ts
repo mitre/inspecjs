@@ -1,4 +1,4 @@
-// import { HeimdallState } from "../src/heimdall_store";
+// import { HeimdallState } from "../../heimdall_store";
 // import * as fs from 'fs';
 
 /*
