@@ -5,9 +5,13 @@
         "rootDir": "src",
         "outDir": "dist",
         "strict": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"]
+        },
         "lib": [
             "es7"
         ],
-        "declaration": true,
-    },
+        "declaration": true
+    }
 }
