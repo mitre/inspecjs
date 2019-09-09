@@ -328,12 +328,12 @@ const typeMap: any = {
         { json: "profiles", js: "profiles", typ: a(r("ExecJSONProfile")) },
         { json: "statistics", js: "statistics", typ: r("Statistics") },
         { json: "version", js: "version", typ: "" },
-    ], false),
+    ], "any"),
     "Platform": o([
         { json: "name", js: "name", typ: "" },
         { json: "release", js: "release", typ: "" },
         { json: "target_id", js: "target_id", typ: u(undefined, "") },
-    ], false),
+    ], "any"),
     "ExecJSONProfile": o([
         { json: "attributes", js: "attributes", typ: a(m("any")) },
         { json: "controls", js: "controls", typ: a(r("ExecJSONControl")) },
@@ -354,7 +354,7 @@ const typeMap: any = {
         { json: "supports", js: "supports", typ: a(r("SupportedPlatform")) },
         { json: "title", js: "title", typ: u(undefined, "") },
         { json: "version", js: "version", typ: u(undefined, "") },
-    ], false),
+    ], "any"),
     "ExecJSONControl": o([
         { json: "code", js: "code", typ: "" },
         { json: "desc", js: "desc", typ: u(null, "") },
@@ -366,11 +366,11 @@ const typeMap: any = {
         { json: "source_location", js: "source_location", typ: r("SourceLocation") },
         { json: "tags", js: "tags", typ: m("any") },
         { json: "title", js: "title", typ: u(null, "") },
-    ], false),
+    ], "any"),
     "ControlDescription": o([
         { json: "data", js: "data", typ: "" },
         { json: "label", js: "label", typ: "" },
-    ], false),
+    ], "any"),
     "Reference": o([
         { json: "ref", js: "ref", typ: u(undefined, u(a(m("any")), "")) },
         { json: "url", js: "url", typ: u(undefined, "") },
@@ -386,11 +386,11 @@ const typeMap: any = {
         { json: "skip_message", js: "skip_message", typ: u(undefined, "") },
         { json: "start_time", js: "start_time", typ: "" },
         { json: "status", js: "status", typ: r("ControlResultStatus") },
-    ], false),
+    ], "any"),
     "SourceLocation": o([
         { json: "line", js: "line", typ: 3.14 },
         { json: "ref", js: "ref", typ: "" },
-    ], false),
+    ], "any"),
     "Dependency": o([
         { json: "branch", js: "branch", typ: u(undefined, "") },
         { json: "compliance", js: "compliance", typ: u(undefined, "") },
@@ -406,7 +406,7 @@ const typeMap: any = {
         { json: "controls", js: "controls", typ: a("") },
         { json: "id", js: "id", typ: "" },
         { json: "title", js: "title", typ: u(undefined, u(null, "")) },
-    ], false),
+    ], "any"),
     "SupportedPlatform": o([
         { json: "os-family", js: "os-family", typ: u(undefined, "") },
         { json: "os-name", js: "os-name", typ: u(undefined, "") },
@@ -418,15 +418,15 @@ const typeMap: any = {
     "Statistics": o([
         { json: "controls", js: "controls", typ: u(undefined, r("StatisticHash")) },
         { json: "duration", js: "duration", typ: 3.14 },
-    ], false),
+    ], "any"),
     "StatisticHash": o([
         { json: "failed", js: "failed", typ: u(undefined, r("StatisticBlock")) },
         { json: "passed", js: "passed", typ: u(undefined, r("StatisticBlock")) },
         { json: "skipped", js: "skipped", typ: u(undefined, r("StatisticBlock")) },
-    ], false),
+    ], "any"),
     "StatisticBlock": o([
         { json: "total", js: "total", typ: 3.14 },
-    ], false),
+    ], "any"),
     "ControlResultStatus": [
         "error",
         "failed",

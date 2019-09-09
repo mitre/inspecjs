@@ -273,7 +273,7 @@ const typeMap: any = {
         { json: "source_location", js: "source_location", typ: r("SourceLocation") },
         { json: "tags", js: "tags", typ: m("any") },
         { json: "title", js: "title", typ: u(null, "") },
-    ], false),
+    ], "any"),
     "Reference": o([
         { json: "ref", js: "ref", typ: u(undefined, u(a(m("any")), "")) },
         { json: "url", js: "url", typ: u(undefined, "") },
@@ -282,7 +282,7 @@ const typeMap: any = {
     "SourceLocation": o([
         { json: "line", js: "line", typ: 3.14 },
         { json: "ref", js: "ref", typ: "" },
-    ], false),
+    ], "any"),
     "Dependency": o([
         { json: "branch", js: "branch", typ: u(undefined, "") },
         { json: "compliance", js: "compliance", typ: u(undefined, "") },
@@ -297,12 +297,12 @@ const typeMap: any = {
     "Generator": o([
         { json: "name", js: "name", typ: "" },
         { json: "version", js: "version", typ: "" },
-    ], false),
+    ], "any"),
     "ControlGroup": o([
         { json: "controls", js: "controls", typ: a("") },
         { json: "id", js: "id", typ: "" },
         { json: "title", js: "title", typ: u(undefined, u(null, "")) },
-    ], false),
+    ], "any"),
     "SupportedPlatform": o([
         { json: "os-family", js: "os-family", typ: u(undefined, "") },
         { json: "os-name", js: "os-name", typ: u(undefined, "") },
