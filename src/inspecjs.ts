@@ -2,6 +2,7 @@
 
 // Export all currently handled schema types
 import * as schemas_1_0 from "./versions/v_1_0";
+export { schemas_1_0 };
 
 // Export Conversion functions
 import * as parse from "./fileparse";
