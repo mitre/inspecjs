@@ -31,7 +31,7 @@ for SCHEMA in ${SCHEMAS[@]}
 do
     # Generate the parser
     OUTFILE="./../generated_parsers/$VERSION/$SCHEMA.ts"
-    npx quicktype -l ts -s schema --src "./work/schemas/$VERSION/$SCHEMA.json" -o $OUTFILE --runtime-typecheck
+    npx quicktype -l ts -s schema --src "./work/schemas/$VERSION/$SCHEMA.json" -o $OUTFILE --runtime-typecheck # --quiet
 
     # Modify it to utilize a null filter parser
     # Add the import
@@ -40,7 +40,7 @@ do
     # Add the call in stead of JSON.parse
     sed -e 's/return cast(JSON.parse(json)/return cast(preprocess(json)/' -i '' $OUTFILE
 
-    # npx quicktype -l ts -s schema --src "./work/schemas/$VERSION/$SCHEMA.json" -o "./../generated_parsers/$VERSION/$SCHEMA.ts"  --runtime-typecheck --all-properties-optional
+    # npx quicktype -l ts -s schema --src "./work/schemas/$VERSION/$SCHEMA.json" -o $OUTFILE --runtime-typecheck --quiet --all-properties-optional
 done
 
 # Remove work directory trash
