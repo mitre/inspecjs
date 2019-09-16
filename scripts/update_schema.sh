@@ -39,8 +39,6 @@ do
     import preprocess from "../preprocessor";' -i '' $OUTFILE
     # Add the call in stead of JSON.parse
     sed -e 's/return cast(JSON.parse(json)/return cast(preprocess(json)/' -i '' $OUTFILE
-
-    # npx quicktype -l ts -s schema --src "./work/schemas/$VERSION/$SCHEMA.json" -o $OUTFILE --runtime-typecheck --quiet --all-properties-optional
 done
 
 # Remove work directory trash
