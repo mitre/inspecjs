@@ -19,8 +19,9 @@ mkdir -p './work/schemas'
 for SCHEMA in ${SCHEMAS[@]}
 do
     echo Generating $SCHEMA
-    # inspec schema $SCHEMA > work/schemas/$VERSION/$SCHEMA.json;
     echo '(TEMPORARILY DISABLED)'
+    # inspec schema $SCHEMA > work/schemas/$VERSION/$SCHEMA.json;
+
 done
 
 # Quicktype each
@@ -29,18 +30,16 @@ mkdir -p "./work/interfaces"
 mkdir -p "./src/generated_parsers/$VERSION"
 for SCHEMA in ${SCHEMAS[@]}
 do
-    # Generate the parser
+    # Establish filenames
     OUTFILE="./src/generated_parsers/$VERSION/$SCHEMA.ts"
-    # OUTFILE="tmp"
     SCHEMAFILE="./work/schemas/$VERSION/$SCHEMA.json"
-    npx quicktype -l ts -s schema --src "$SCHEMAFILE" -o $OUTFILE --runtime-typecheck
+    MODIFIED_SCHEMAFILE="./work/tmp_schema.json"
 
-    # Modify it to utilize a null filter parser
-    # Add the import
-    sed -e '9i\
-    import preprocess from "../preprocessor";' -i '' $OUTFILE
-    # Add the call in stead of JSON.parse
-    sed -e 's/return cast(JSON.parse(json)/return cast(preprocess(json)/' -i '' $OUTFILE
+    # Loosen the schema
+    /bin/bash scripts/null_compat_schema.sh $SCHEMAFILE > $MODIFIED_SCHEMAFILE
+
+    # Generate the parser
+    npx quicktype -l ts -s schema --src $MODIFIED_SCHEMAFILE -o $OUTFILE --runtime-typecheck
 done
 
 # Remove work directory trash
