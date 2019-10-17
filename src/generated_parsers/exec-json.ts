@@ -94,7 +94,7 @@ export interface ControlResult {
     exception?:    null | string;
     message?:      null | string;
     resource?:     null | string;
-    run_time:      number;
+    run_time?:     number | null;
     skip_message?: null | string;
     start_time:    string;
     status?:       ControlResultStatus | null;
@@ -379,7 +379,7 @@ const typeMap: any = {
         { json: "exception", js: "exception", typ: u(undefined, u(null, "")) },
         { json: "message", js: "message", typ: u(undefined, u(null, "")) },
         { json: "resource", js: "resource", typ: u(undefined, u(null, "")) },
-        { json: "run_time", js: "run_time", typ: 3.14 },
+        { json: "run_time", js: "run_time", typ: u(undefined, u(3.14, null)) },
         { json: "skip_message", js: "skip_message", typ: u(undefined, u(null, "")) },
         { json: "start_time", js: "start_time", typ: "" },
         { json: "status", js: "status", typ: u(undefined, u(r("ControlResultStatus"), null)) },

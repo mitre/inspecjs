@@ -176,7 +176,7 @@ export class ExecControl extends HDFControl_1_0 implements HDFControl {
                 exception: result.exception || undefined,
                 backtrace: result.backtrace || undefined,
                 start_time: result.start_time,
-                run_time: result.run_time,
+                run_time: result.run_time || undefined,
                 resource: result.resource || undefined,
             };
         });
