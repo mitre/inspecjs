@@ -32,4 +32,4 @@ def objs: .. | select(is_obj);
 | (objs |= unrequire_nullables)
 # Make all non required nullable
 | (objs |= null_unrequired)
-' $1
+' <&0

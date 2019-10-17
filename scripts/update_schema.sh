@@ -36,7 +36,8 @@ do
     MODIFIED_SCHEMAFILE="./work/tmp_schema.json"
 
     # Loosen the schema
-    /bin/bash scripts/null_compat_schema.sh $SCHEMAFILE > $MODIFIED_SCHEMAFILE
+    COMPAT="./scripts/schema_compat_patches"
+    cat $SCHEMAFILE | . "$COMPAT/generic.sh" | . "$COMPAT/$SCHEMA.sh" | . "./scripts/null_compat_schema.sh" > $MODIFIED_SCHEMAFILE
 
     # Generate the parser
     npx quicktype -l ts -s schema --src $MODIFIED_SCHEMAFILE -o $OUTFILE --runtime-typecheck
