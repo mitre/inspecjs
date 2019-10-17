@@ -33,7 +33,7 @@ do
     # Establish filenames
     OUTFILE="./src/generated_parsers/$VERSION/$SCHEMA.ts"
     SCHEMAFILE="./work/schemas/$VERSION/$SCHEMA.json"
-    MODIFIED_SCHEMAFILE="./work/tmp_schema.json"
+    MODIFIED_SCHEMAFILE="./work/tmp_$SCHEMA.json"
 
     # Loosen the schema
     COMPAT="./scripts/schema_compat_patches"
@@ -41,6 +41,7 @@ do
 
     # Generate the parser
     npx quicktype -l ts -s schema --src $MODIFIED_SCHEMAFILE -o $OUTFILE --runtime-typecheck
+    # rm $MODIFIED_SCHEMAFILE
 done
 
 # Remove work directory trash

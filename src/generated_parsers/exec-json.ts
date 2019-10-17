@@ -53,7 +53,7 @@ export interface ExecJSONControl {
      * The raw source code of the control. Note that if this is an overlay control, it does not
      * include the underlying source code
      */
-    code:          string;
+    code?:         null | string;
     desc?:         null | string;
     descriptions?: ControlDescription[] | null;
     /**
@@ -353,7 +353,7 @@ const typeMap: any = {
         { json: "version", js: "version", typ: u(undefined, u(null, "")) },
     ], "any"),
     "ExecJSONControl": o([
-        { json: "code", js: "code", typ: "" },
+        { json: "code", js: "code", typ: u(undefined, u(null, "")) },
         { json: "desc", js: "desc", typ: u(undefined, u(null, "")) },
         { json: "descriptions", js: "descriptions", typ: u(undefined, u(a(r("ControlDescription")), null)) },
         { json: "id", js: "id", typ: "" },
