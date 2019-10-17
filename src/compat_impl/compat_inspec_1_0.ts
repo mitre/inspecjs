@@ -41,8 +41,8 @@ abstract class HDFControl_1_0 implements HDFControl {
     abstract get message(): string;
 
     get nist_tags(): string[] {
-        let fetched: string[] | undefined = this.wraps.tags["nist"];
-        if (fetched == null || fetched.length === 0) {
+        let fetched: string[] | undefined | null = this.wraps.tags["nist"];
+        if (!fetched || fetched.length === 0) {
             return ["UM-1"];
         } else {
             return fetched;
@@ -77,7 +77,7 @@ abstract class HDFControl_1_0 implements HDFControl {
             case "Not Applicable":
                 return `Justification:\n\n${this.message}\n`;
             case "Profile Error":
-                if (this.status_list === undefined || this.status_list.length === 0) {
+                if (!this.status_list || this.status_list.length === 0) {
                     return "No describe blocks were run in this control";
                 } else if (this.message !== undefined) {
                     return `Exception:\n\n${this.message}\n`;
@@ -115,7 +115,7 @@ abstract class HDFControl_1_0 implements HDFControl {
         if (this.is_profile) {
             return "From Profile";
         } else if (
-            this.status_list === undefined ||
+            !this.status_list ||
             this.status_list.length === 0 ||
             this.status_list.includes("error")
         ) {
