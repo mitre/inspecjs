@@ -53,11 +53,11 @@ export interface SourceLocation {
     /**
      * The line at which this statement is located in the file
      */
-    line: number;
+    line?: number | null;
     /**
      * Path to the file that this statement originates from
      */
-    ref: string;
+    ref?: null | string;
 }
 
 export interface Dependency {
@@ -282,8 +282,8 @@ const typeMap: any = {
         { json: "uri", js: "uri", typ: u(undefined, "") },
     ], "any"),
     "SourceLocation": o([
-        { json: "line", js: "line", typ: 3.14 },
-        { json: "ref", js: "ref", typ: "" },
+        { json: "line", js: "line", typ: u(undefined, u(3.14, null)) },
+        { json: "ref", js: "ref", typ: u(undefined, u(null, "")) },
     ], "any"),
     "Dependency": o([
         { json: "branch", js: "branch", typ: u(undefined, u(null, "")) },

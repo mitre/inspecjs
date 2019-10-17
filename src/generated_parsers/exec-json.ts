@@ -111,11 +111,11 @@ export interface SourceLocation {
     /**
      * The line at which this statement is located in the file
      */
-    line: number;
+    line?: number | null;
     /**
      * Path to the file that this statement originates from
      */
-    ref: string;
+    ref?: null | string;
 }
 
 export interface Dependency {
@@ -159,7 +159,7 @@ export interface Statistics {
     /**
      * How long (in seconds) this inspec exec ran for.
      */
-    duration: number;
+    duration?: number | null;
 }
 
 /**
@@ -385,8 +385,8 @@ const typeMap: any = {
         { json: "status", js: "status", typ: u(undefined, u(r("ControlResultStatus"), null)) },
     ], "any"),
     "SourceLocation": o([
-        { json: "line", js: "line", typ: 3.14 },
-        { json: "ref", js: "ref", typ: "" },
+        { json: "line", js: "line", typ: u(undefined, u(3.14, null)) },
+        { json: "ref", js: "ref", typ: u(undefined, u(null, "")) },
     ], "any"),
     "Dependency": o([
         { json: "branch", js: "branch", typ: u(undefined, u(null, "")) },
@@ -414,7 +414,7 @@ const typeMap: any = {
     ], "any"),
     "Statistics": o([
         { json: "controls", js: "controls", typ: u(undefined, u(null, r("StatisticHash"))) },
-        { json: "duration", js: "duration", typ: 3.14 },
+        { json: "duration", js: "duration", typ: u(undefined, u(3.14, null)) },
     ], "any"),
     "StatisticHash": o([
         { json: "failed", js: "failed", typ: u(undefined, u(null, r("StatisticBlock"))) },
