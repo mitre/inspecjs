@@ -13,12 +13,17 @@ import {
     SegmentStatus,
     HDFControlSegment,
 } from "../compat_wrappers";
+import { parse_nist, NistControl } from "../nist";
 
 abstract class HDFControl_1_0 implements HDFControl {
+    // We cache these here
+    _fixed_nist_tags?: NistControl[];
     // We use this as a reference
     wraps: ResultControl_1_0 | ProfileControl_1_0;
+
     constructor(forControl: ResultControl_1_0 | ProfileControl_1_0) {
         this.wraps = forControl;
+
     }
 
     // Helper for turning control results into strings
@@ -40,29 +45,28 @@ abstract class HDFControl_1_0 implements HDFControl {
     // Abstracts
     abstract get message(): string;
 
-    get nist_tags(): string[] {
+    get raw_nist_tags(): string[] {
         let fetched: string[] | undefined | null = this.wraps.tags["nist"];
-        if (!fetched || fetched.length === 0) {
-            return ["UM-1"];
+        if (!fetched) {
+            return [];
         } else {
             return fetched;
         }
     }
 
-    get fixed_nist_tags(): string[] {
-        const tags = this.nist_tags;
-
-        // Otherwise, filter to only those that follow format @@-#,
-        // where @ is any capital letter, and # is any number (1 or more digits)
-        const pattern = /[A-Z][A-Z]-[0-9]+/;
-        let results: string[] = [];
-        tags.forEach(tag => {
-            let finding = tag.match(pattern);
-            if (finding !== null && !results.includes(finding[0])) {
-                results.push(finding[0]);
+    get fixed_nist_tags(): NistControl[] {
+        if(!this._fixed_nist_tags) {
+            // Do the computations now, to save time later. These are fairly expensive
+            let _fixed_nist_tags = this.raw_nist_tags.map(parse_nist).filter(x => x !== null) as NistControl[];
+            _fixed_nist_tags = _fixed_nist_tags.sort((a, b) => a.localCompare(b));
+            if(_fixed_nist_tags.length === 0) {
+                _fixed_nist_tags = [parse_nist("UM-1")!];
             }
-        });
-        return results;
+
+            // Save to cache
+            this._fixed_nist_tags = _fixed_nist_tags;
+        }
+        return this._fixed_nist_tags;
     }
 
     get finding_details(): string {
