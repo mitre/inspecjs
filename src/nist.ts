@@ -94,14 +94,14 @@ export class NistControl {
         let b = other;
         let a_chain = [a.family, ...a.sub_specs];
         let b_chain = [b.family, ...b.sub_specs];
-        for(let i=0; i<a_chain.length && i<b_chain.length; i++) {
+        for (let i = 0; i < a_chain.length && i < b_chain.length; i++) {
             // Compare corresponding elements of the chain
             let a_i = a_chain[i];
             let b_i = b_chain[i];
 
             // Return only if significant
-            let lc = a_i.localeCompare(b_i, "en", {numeric: true});
-            if(lc) {
+            let lc = a_i.localeCompare(b_i, "en", { numeric: true });
+            if (lc) {
                 return lc;
             }
         }
@@ -196,7 +196,6 @@ export function updateStatus(
     }
 }
 
-
 export interface NistHierarchyNode {
     control: NistControl;
     children: NistHierarchyNode[];
@@ -204,15 +203,18 @@ export interface NistHierarchyNode {
 export type NistHierarchy = NistHierarchyNode[];
 
 function _control_parent(c: NistControl): NistControl | null {
-    if(c.sub_specs.length) {
-        return new NistControl(c.family, c.sub_specs.slice(0, c.sub_specs.length-1));
+    if (c.sub_specs.length) {
+        return new NistControl(
+            c.family,
+            c.sub_specs.slice(0, c.sub_specs.length - 1)
+        );
     } else {
         return null; // Can't get any shorter
     }
 }
 
 function _key_for(c: NistControl): string {
-    return c.family + c.sub_specs.join('-');
+    return c.family + c.sub_specs.join("-");
 }
 
 function _generate_full_nist_hierarchy(): NistHierarchy {
@@ -220,12 +222,12 @@ function _generate_full_nist_hierarchy(): NistHierarchy {
     let roots: NistHierarchy = ALL_NIST_FAMILIES.map(family => {
         return {
             control: new NistControl(family, [], family),
-            children: []
+            children: [],
         };
     });
 
     // Init our map, which maps _key_for of controls to their corresponding hierarchy nodes
-    let map: {[key: string]: NistHierarchyNode} = {}; 
+    let map: { [key: string]: NistHierarchyNode } = {};
 
     // Add roots to the map
     roots.forEach(r => {
@@ -235,22 +237,22 @@ function _generate_full_nist_hierarchy(): NistHierarchy {
     // Iterate over all controls
     ALL_NIST_CONTROL_NUMBERS.forEach(n => {
         let as_control = parse_nist(n);
-        if(!as_control) {
+        if (!as_control) {
             throw `Invalid nist control constant ${n}`;
         }
 
         // If our node has already been created, replace the temporary control with the "real" one
         let key = _key_for(as_control);
-        let as_node: NistHierarchyNode
-        if(map[key]) {
+        let as_node: NistHierarchyNode;
+        if (map[key]) {
             as_node = map[key];
             as_node.control = as_control;
         } else {
             //Make it fresh
             as_node = {
                 control: as_control,
-                children: []
-            }
+                children: [],
+            };
 
             // Register in map
             map[key] = as_node;
@@ -260,10 +262,10 @@ function _generate_full_nist_hierarchy(): NistHierarchy {
         let parent = _control_parent(as_control);
 
         // If parent is null, add to roots.
-        if(!parent) {
+        if (!parent) {
             roots.push({
                 control: as_control,
-                children: []
+                children: [],
             });
         } else {
             // Valid parent; look it up and append us to it
@@ -271,14 +273,14 @@ function _generate_full_nist_hierarchy(): NistHierarchy {
             let parent_node = map[parent_key];
 
             // If parent has been explored already, simply append this node to that
-            if(parent_node) {
+            if (parent_node) {
                 parent_node.children.push(as_node);
             } else {
-                // It's not? make a stub 
+                // It's not? make a stub
                 map[parent_key] = {
                     control: parent,
-                    children: [as_node] // "Us"
-                }
+                    children: [as_node], // "Us"
+                };
             }
         }
     });
@@ -287,4 +289,6 @@ function _generate_full_nist_hierarchy(): NistHierarchy {
     return roots;
 }
 
-export const FULL_NIST_HIERARCHY: Readonly<NistHierarchy> = _generate_full_nist_hierarchy();
+export const FULL_NIST_HIERARCHY: Readonly<
+    NistHierarchy
+> = _generate_full_nist_hierarchy();
