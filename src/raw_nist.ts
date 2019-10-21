@@ -1,5 +1,27 @@
 /** does what is says on the tin */
-export const ALL_NIST_CONTROL_NUMBERS: string[] = [
+export const ALL_NIST_FAMILIES: Readonly<string[]> = [
+    "AC",
+    "AT",
+    "AU",
+    "CA",
+    "CM",
+    "CP",
+    "IA",
+    "IR",
+    "MA",
+    "MP",
+    "PE",
+    "PL",
+    "PM",
+    "PS",
+    "RA",
+    "SA",
+    "SC",
+    "SI",
+    "UM", // We added this - it is not official
+];
+
+export const ALL_NIST_CONTROL_NUMBERS: Readonly<string[]> = [
     "UM-1", // We added this - it is not official
     "AC-1",
     "AC-10",

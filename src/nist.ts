@@ -7,7 +7,7 @@
  */
 
 import { ControlStatus, HDFControl } from "./compat_wrappers";
-import { ALL_NIST_CONTROL_NUMBERS } from "./raw_nist";
+import { ALL_NIST_CONTROL_NUMBERS, ALL_NIST_FAMILIES } from "./raw_nist";
 
 // Format is [Name, Description, NumberOfChildren]
 export type NistFamilyDescription = [string, string, number];
@@ -34,10 +34,11 @@ const families: NistFamilyDescription[] = [
     ["SA", "System and Services Acquisition", 22],
 ];
 
+const NIST_FAMILY_FORMAT = "[A-Z]{2}";
 const SUBSPEC_FORMAT = " |[a-z]\\.|[0-9]+\\.?|\\([a-z]\\)|\\([0-9]+\\)";
 const SUBSPEC_FORMAT_RE = RegExp(SUBSPEC_FORMAT);
-const NIST_CONTROL_FORMAT = `([A-Z]{2})-((${SUBSPEC_FORMAT})*)`;
-export const NIST_CONTROL_FORMAT_RE = RegExp(NIST_CONTROL_FORMAT);
+const NIST_CONTROL_FORMAT = `^(${NIST_FAMILY_FORMAT})(-((${SUBSPEC_FORMAT})*))?`;
+const NIST_CONTROL_FORMAT_RE = RegExp(NIST_CONTROL_FORMAT);
 
 /** Represents a single nist control, or group of controls if the sub specs are vague enoug. */
 export class NistControl {
@@ -111,6 +112,7 @@ export class NistControl {
 }
 
 export function parse_nist(raw_nist: string): NistControl | null {
+    // Is it just a family?
     // Get the match, failing out if we can't
     let match = raw_nist.match(NIST_CONTROL_FORMAT_RE);
     if (!match) {
@@ -119,7 +121,7 @@ export function parse_nist(raw_nist: string): NistControl | null {
 
     // Parse sub-elements
     let family = match[1];
-    let subspecs_raw = match[2].trim();
+    let subspecs_raw = (match[3] || "").trim();
     let sub_specs: string[] = [];
     // Consume string piecemeal
     while (subspecs_raw) {
@@ -210,13 +212,25 @@ function _control_parent(c: NistControl): NistControl | null {
 }
 
 function _key_for(c: NistControl): string {
-    return c.family + c.sub_specs.join('');
+    return c.family + c.sub_specs.join('-');
 }
 
 function _generate_full_nist_hierarchy(): NistHierarchy {
-    // Initialize our data structures
-    let roots: NistHierarchy = [];
-    let map: {[key: string]: NistHierarchyNode} = {}; // Maps _key_for of controls to their corresponding hierarchy nodes
+    // Initialize our roots
+    let roots: NistHierarchy = ALL_NIST_FAMILIES.map(family => {
+        return {
+            control: new NistControl(family, [], family),
+            children: []
+        };
+    });
+
+    // Init our map, which maps _key_for of controls to their corresponding hierarchy nodes
+    let map: {[key: string]: NistHierarchyNode} = {}; 
+
+    // Add roots to the map
+    roots.forEach(r => {
+        map[_key_for(r.control)] = r;
+    });
 
     // Iterate over all controls
     ALL_NIST_CONTROL_NUMBERS.forEach(n => {
@@ -273,4 +287,4 @@ function _generate_full_nist_hierarchy(): NistHierarchy {
     return roots;
 }
 
-export const FULL_NIST_HEIRARCHY: Readonly<NistHierarchy> = _generate_full_nist_hierarchy();
+export const FULL_NIST_HIERARCHY: Readonly<NistHierarchy> = _generate_full_nist_hierarchy();
