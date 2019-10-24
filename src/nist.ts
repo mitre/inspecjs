@@ -5,6 +5,7 @@ import { ALL_NIST_CONTROL_NUMBERS, ALL_NIST_FAMILIES } from "./raw_nist";
 const NIST_FAMILY_RE = /^[A-Z]{2}$/;
 const NIST_CONTROL_RE = /^([A-Z]{2})-([0-9]+)(.*)$/;
 const SPEC_SPLITTER = /[\s|\(|\)|\.]+/; // Includes all whitespace, periods, and parenthesis
+const REV_RE = /^rev[\s_.]+(\d+)$/i; // Matches Rev_5 etc
 
 /** Represents a single nist control, or group of controls if the sub specs are vague enoug. */
 export class NistControl {
@@ -95,7 +96,20 @@ export class NistControl {
     }
 }
 
-export function parse_nist(raw_nist: string): NistControl | null {
+/** Wrapper around a revision number. Currently has no additional functionality, but this may change. */
+export class NistRevision {
+    rev_num: number;
+    constructor(rev_num: number) {
+        this.rev_num = rev_num;
+    }
+}
+
+export function parse_nist(raw_nist: string): NistControl | NistRevision | null {
+    // Is it a revision? Get the match, continuing if none
+    let rev_match = raw_nist.match(REV_RE);
+    if(rev_match) {
+        return new NistRevision(Number.parseInt(rev_match[1]));
+    }
     // Is it just a family?
     // Get the match, failing out if we can't
     let fam_match = raw_nist.match(NIST_FAMILY_RE);
@@ -215,7 +229,7 @@ function _generate_full_nist_hierarchy(): NistHierarchy {
 
     // Iterate over all controls
     ALL_NIST_CONTROL_NUMBERS.forEach(n => {
-        let as_control = parse_nist(n);
+        let as_control = parse_nist(n) as NistControl | null; // We know there are no revs in our file
         if (!as_control) {
             throw `Invalid nist control constant ${n}`;
         }

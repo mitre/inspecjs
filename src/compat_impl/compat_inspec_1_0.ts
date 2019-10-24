@@ -60,7 +60,7 @@ abstract class HDFControl_1_0 implements HDFControl {
             let _fixed_nist_tags = this.raw_nist_tags.map(parse_nist).filter(x => x !== null) as NistControl[];
             _fixed_nist_tags = _fixed_nist_tags.sort((a, b) => a.localCompare(b));
             if(_fixed_nist_tags.length === 0) {
-                _fixed_nist_tags = [parse_nist("UM-1")!];
+                _fixed_nist_tags = [parse_nist("UM-1") as NistControl];
             }
 
             // Save to cache
