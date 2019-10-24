@@ -2,32 +2,25 @@ import { ControlStatus, HDFControl } from "./compat_wrappers";
 import { ALL_NIST_CONTROL_NUMBERS, ALL_NIST_FAMILIES } from "./raw_nist";
 
 // Regexes. 
-const NIST_FAMILY_FORMAT = "[A-Z]{2}";
-const SUBSPEC_FORMAT = " |[a-z]\\.|[0-9]+\\.?|\\([a-z]\\)|\\([0-9]+\\)";
-const SUBSPEC_FORMAT_RE = RegExp(SUBSPEC_FORMAT);
-const NIST_CONTROL_FORMAT = `^(${NIST_FAMILY_FORMAT})(-((${SUBSPEC_FORMAT})*))?`;
-const NIST_CONTROL_FORMAT_RE = RegExp(NIST_CONTROL_FORMAT);
+const NIST_FAMILY_RE = /^[A-Z]{2}$/;
+const NIST_CONTROL_RE = /^([A-Z]{2})-([0-9]+)(.*)$/;
+const SPEC_SPLITTER = /[\s|\(|\)|\.]+/; // Includes all whitespace, periods, and parenthesis
 
 /** Represents a single nist control, or group of controls if the sub specs are vague enoug. */
 export class NistControl {
-    /** The leading two capital letters of the nist control. E.g. CA, RA, etc. */
-    family: string;
-
-    /** The sequence of sub-specifiers after the - in the control.
-     * E.g.  in "SI-7 (14)(b)", we would have ["7", "(14)", "(b)"]
-     *       in "SI-4a.2.", we would have ["4", "a.", "2."];
-     * Guaranteed to always be of length at least one.
-     * First element is guaranteed to be a number
+    /** The sequence of sub-specifiers making up the "parts" of the nist tags
+     * E.g.  in "SI-7 (14)(b)", we would have ["SI", "7", "(14)", "(b)"]
+     *       in "SI-4a.2.", we would have ["SI", "4", "a.", "2."];
+     * First element is guaranteed to be a 2-letter family
      */
-    sub_specs: string[]; // Guaranteed to be of length at least one on a "real" control
+    sub_specifiers: string[]; // Guaranteed to be of length at least one on a "real" control
 
     /** Holds the string from which this control was generated. */
     raw_text?: string;
 
     /** Trivial constructor */
-    constructor(family: string, sub_specs: string[], raw_rext?: string) {
-        this.family = family;
-        this.sub_specs = sub_specs;
+    constructor(sub_specs: string[], raw_rext?: string) {
+        this.sub_specifiers = sub_specs;
         this.raw_text = raw_rext;
     }
 
@@ -48,25 +41,21 @@ export class NistControl {
      * If the other control is NOT a child of this control, return -1
      */
     compare_lineage(other: NistControl): number {
-        // Can't contain if not same family
-        if (this.family !== other.family) {
-            return -1;
-        }
         // Can't contain if we're more specific
-        if (this.sub_specs.length > other.sub_specs.length) {
+        if (this.sub_specifiers.length > other.sub_specifiers.length) {
             return -1;
         }
 
         // After that we just need to iterate
-        for (let i = 0; i < this.sub_specs.length; i++) {
+        for (let i = 0; i < this.sub_specifiers.length; i++) {
             // If our subspec differentiate at any point, then we do not match
-            if (this.sub_specs[i] !== other.sub_specs[i]) {
+            if (this.sub_specifiers[i] !== other.sub_specifiers[i]) {
                 return -1;
             }
         }
 
         // We survived! The change in # sub specs is thus the # of changes to enhancements
-        return other.sub_specs.length - this.sub_specs.length;
+        return other.sub_specifiers.length - this.sub_specifiers.length;
     }
 
     /** Gives a numeric value indicating how these controls compare, lexicographically.
@@ -76,8 +65,8 @@ export class NistControl {
         // Convert into a chain of directives
         let a = this;
         let b = other;
-        let a_chain = [a.family, ...a.sub_specs];
-        let b_chain = [b.family, ...b.sub_specs];
+        let a_chain = a.sub_specifiers;
+        let b_chain = b.sub_specifiers;
         for (let i = 0; i < a_chain.length && i < b_chain.length; i++) {
             // Compare corresponding elements of the chain
             let a_i = a_chain[i];
@@ -93,37 +82,45 @@ export class NistControl {
         // Fall back to length comparison. We want shorter first, so ascending's good
         return a_chain.length - b_chain.length;
     }
+
+    /**
+     * Quick accessor to the leading family letters for the nsit control
+     */
+    get family(): string | undefined {
+        if(this.sub_specifiers.length) {
+            return this.sub_specifiers[0];
+        } else {
+            return undefined;
+        }
+    }
 }
 
 export function parse_nist(raw_nist: string): NistControl | null {
     // Is it just a family?
     // Get the match, failing out if we can't
-    let match = raw_nist.match(NIST_CONTROL_FORMAT_RE);
-    if (!match) {
+    let fam_match = raw_nist.match(NIST_FAMILY_RE);
+    if (fam_match) {
+        return new NistControl([fam_match[0]], fam_match[0]);
+    }
+
+    // Next try it as a full control
+    let full_match = raw_nist.match(NIST_CONTROL_RE);
+    if(!full_match) {
         return null;
     }
 
     // Parse sub-elements
-    let family = match[1];
-    let subspecs_raw = (match[3] || "").trim();
-    let sub_specs: string[] = [];
-    // Consume string piecemeal
-    while (subspecs_raw) {
-        // Should always exist
-        let match = subspecs_raw.match(SUBSPEC_FORMAT_RE);
-        if (match) {
-            // Pull it out
-            let next_subspec = match[0];
-            // Trim it off
-            subspecs_raw = subspecs_raw.slice(next_subspec.length).trim();
-            // Push it onto the list
-            sub_specs.push(next_subspec);
-        } else {
-            break;
-        }
-    }
+    let family = full_match[1];
+    let control_num = full_match[2];
+    let subspecs_raw = (full_match[3] || "").trim();
 
-    return new NistControl(family, sub_specs, raw_nist);
+    // Init sub-specs
+    let sub_specs: string[] = [family, control_num];
+
+    // Filter garbage from subspecs_raw
+    let subspecs_split = subspecs_raw.split(SPEC_SPLITTER);
+    subspecs_split = subspecs_split.filter(s => s != "");
+    return new NistControl(sub_specs.concat(subspecs_split), raw_nist);
 }
 
 /** All a control in a nist hash really needs is a status */
@@ -187,10 +184,8 @@ export interface NistHierarchyNode {
 export type NistHierarchy = NistHierarchyNode[];
 
 function _control_parent(c: NistControl): NistControl | null {
-    if (c.sub_specs.length) {
-        return new NistControl(
-            c.family,
-            c.sub_specs.slice(0, c.sub_specs.length - 1)
+    if (c.sub_specifiers.length) {
+        return new NistControl(c.sub_specifiers.slice(0, c.sub_specifiers.length - 1)
         );
     } else {
         return null; // Can't get any shorter
@@ -198,14 +193,14 @@ function _control_parent(c: NistControl): NistControl | null {
 }
 
 function _key_for(c: NistControl): string {
-    return c.family + c.sub_specs.join("-");
+    return c.sub_specifiers.join("-");
 }
 
 function _generate_full_nist_hierarchy(): NistHierarchy {
     // Initialize our roots
     let roots: NistHierarchy = ALL_NIST_FAMILIES.map(family => {
         return {
-            control: new NistControl(family, [], family),
+            control: new NistControl([family], family),
             children: [],
         };
     });
@@ -242,7 +237,6 @@ function _generate_full_nist_hierarchy(): NistHierarchy {
             map[key] = as_node;
         }
 
-        // Get the parent
         let parent = _control_parent(as_control);
 
         // If parent is null, add to roots.
