@@ -1,39 +1,7 @@
-/**
- * Within this code we use the following nomenclature:
- * A "hash" isn't a hash in the sense of sha256 or whatever; it is simply a condensed representation for use in rendering.
- * A Family is the higher level grouping of NIST vulnerabilies. EG: AC, AU, AT, etc.
- * A Category is the subgrouping of Family. EG: AC-3, PM-15, etc.
- * A NistHash is a large record containing information about many families, and by extension their categories
- */
-
 import { ControlStatus, HDFControl } from "./compat_wrappers";
 import { ALL_NIST_CONTROL_NUMBERS, ALL_NIST_FAMILIES } from "./raw_nist";
 
-// Format is [Name, Description, NumberOfChildren]
-export type NistFamilyDescription = [string, string, number];
-
-const families: NistFamilyDescription[] = [
-    ["UM", "Unmapped", 1],
-    ["AC", "Access Control", 25],
-    ["AU", "Audit and Accountability", 16],
-    ["AT", "Awareness and Training", 5],
-    ["CM", "Configuration Management", 11],
-    ["CP", "Contingency Planning", 13],
-    ["IA", "Identification and Authentication", 11],
-    ["IR", "Incident Response", 10],
-    ["MA", "Maintenance", 6],
-    ["MP", "Media Protection", 8],
-    ["PS", "Personnel Security", 8],
-    ["PE", "Physical and Environmental Protection", 20],
-    ["PL", "Planning", 9],
-    ["PM", "Program Management", 16],
-    ["RA", "Risk Assessment", 6],
-    ["CA", "Security Assessment and Authorization", 9],
-    ["SC", "System and Communications Protection", 44],
-    ["SI", "System and Information Integrity", 17],
-    ["SA", "System and Services Acquisition", 22],
-];
-
+// Regexes. 
 const NIST_FAMILY_FORMAT = "[A-Z]{2}";
 const SUBSPEC_FORMAT = " |[a-z]\\.|[0-9]+\\.?|\\([a-z]\\)|\\([0-9]+\\)";
 const SUBSPEC_FORMAT_RE = RegExp(SUBSPEC_FORMAT);
@@ -63,26 +31,42 @@ export class NistControl {
         this.raw_text = raw_rext;
     }
 
-    /** This function if the given control is contained by or equivalent to this control.*/
-    contains(other: NistControl) {
+    /** This function checks if the given control is contained by or equivalent to this control.
+     * It is purely a wrapper around compare_lineage
+    */
+    contains(other: NistControl): boolean {
+        return this.compare_lineage(other) !== -1;
+    }
+
+    /** This function compares this nist control to another nist control.
+     * If the other control is the same control as this one, returns 0.
+     * 
+     * If the other control is a child of this control 
+     * (IE it is the same base directives with further enhancements, e.g. `IA-4` -> `IA-4b.` or `AC-9a.` -> `AC-9a. (2)`)
+     * and returns how many further enhancements have been applied (IE what is the number of additional subdirectives.)
+     * 
+     * If the other control is NOT a child of this control, return -1
+     */
+    compare_lineage(other: NistControl): number {
         // Can't contain if not same family
         if (this.family !== other.family) {
-            return false;
+            return -1;
         }
         // Can't contain if we're more specific
         if (this.sub_specs.length > other.sub_specs.length) {
-            return false;
+            return -1;
         }
 
         // After that we just need to iterate
         for (let i = 0; i < this.sub_specs.length; i++) {
+            // If our subspec differentiate at any point, then we do not match
             if (this.sub_specs[i] !== other.sub_specs[i]) {
-                return false;
+                return -1;
             }
         }
 
-        // We survived!
-        return true;
+        // We survived! The change in # sub specs is thus the # of changes to enhancements
+        return other.sub_specs.length - this.sub_specs.length;
     }
 
     /** Gives a numeric value indicating how these controls compare, lexicographically.

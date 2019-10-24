@@ -15,6 +15,7 @@ import {
 } from "../compat_wrappers";
 import { parse_nist, NistControl } from "../nist";
 
+const UNMAPPED = new NistControl("UM", ["1"], "UM-1");
 abstract class HDFControl_1_0 implements HDFControl {
     // We cache these here
     _fixed_nist_tags?: NistControl[];
