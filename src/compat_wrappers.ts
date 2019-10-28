@@ -5,7 +5,7 @@ import {
     ExecControl as HDFExecControl_1_0,
 } from "./compat_impl/compat_inspec_1_0";
 import * as parsetypes from "./fileparse";
-import { NistControl } from "./nist";
+import { NistControl, NistRevision } from "./nist";
 
 // These types are used throughout for control/result status and impact
 
@@ -87,7 +87,13 @@ export interface HDFControl {
      * If unmapped, will be effectively UM-1.
      * Sorted lexicographically, first by family, then by corresponding sub-specifiers.
      */
-    fixed_nist_tags: NistControl[];
+    parsed_nist_tags: NistControl[];
+
+    /**
+     * Returns the revision of the nist tags, if it was found.
+     */
+    parsed_nist_revision: NistRevision | null;
+
 
     /** Get the start time of this control's run, as determiend by the time of the first test.
      * If no tests were run, (it is a profile-json or has no tests) returns undefined

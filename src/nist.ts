@@ -137,6 +137,23 @@ export function parse_nist(raw_nist: string): NistControl | NistRevision | null 
     return new NistControl(sub_specs.concat(subspecs_split), raw_nist);
 }
 
+/** Simple discriminators */
+export function is_control(x: NistControl | NistRevision | null): x is NistControl {
+    if(x && (x as NistControl).sub_specifiers !== undefined) {
+        return true;
+    }
+    return false;
+}
+
+/** Simple discriminators */
+export function is_revision(x: NistControl | NistRevision | null): x is NistRevision {
+    if(x && (x as NistRevision).rev_num !== undefined) {
+        return true;
+    }
+    return false;
+}
+
+
 /** All a control in a nist hash really needs is a status */
 export interface CategoryItemRequirements {
     status: ControlStatus;
