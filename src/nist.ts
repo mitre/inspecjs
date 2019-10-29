@@ -1,7 +1,7 @@
 import { ControlStatus, HDFControl } from "./compat_wrappers";
 import { ALL_NIST_CONTROL_NUMBERS, ALL_NIST_FAMILIES } from "./raw_nist";
 
-// Regexes. 
+// Regexes.
 const NIST_FAMILY_RE = /^[A-Z]{2}$/;
 const NIST_CONTROL_RE = /^([A-Z]{2})-([0-9]+)(.*)$/;
 const SPEC_SPLITTER = /[\s|\(|\)|\.]+/; // Includes all whitespace, periods, and parenthesis
@@ -27,18 +27,18 @@ export class NistControl {
 
     /** This function checks if the given control is contained by or equivalent to this control.
      * It is purely a wrapper around compare_lineage
-    */
+     */
     contains(other: NistControl): boolean {
         return this.compare_lineage(other) !== -1;
     }
 
     /** This function compares this nist control to another nist control.
      * If the other control is the same control as this one, returns 0.
-     * 
-     * If the other control is a child of this control 
+     *
+     * If the other control is a child of this control
      * (IE it is the same base directives with further enhancements, e.g. `IA-4` -> `IA-4b.` or `AC-9a.` -> `AC-9a. (2)`)
      * and returns how many further enhancements have been applied (IE what is the number of additional subdirectives.)
-     * 
+     *
      * If the other control is NOT a child of this control, return -1
      */
     compare_lineage(other: NistControl): number {
@@ -88,7 +88,7 @@ export class NistControl {
      * Quick accessor to the leading family letters for the nsit control
      */
     get family(): string | undefined {
-        if(this.sub_specifiers.length) {
+        if (this.sub_specifiers.length) {
             return this.sub_specifiers[0];
         } else {
             return undefined;
@@ -104,10 +104,12 @@ export class NistRevision {
     }
 }
 
-export function parse_nist(raw_nist: string): NistControl | NistRevision | null {
+export function parse_nist(
+    raw_nist: string
+): NistControl | NistRevision | null {
     // Is it a revision? Get the match, continuing if none
     let rev_match = raw_nist.match(REV_RE);
-    if(rev_match) {
+    if (rev_match) {
         return new NistRevision(Number.parseInt(rev_match[1]));
     }
     // Is it just a family?
@@ -119,7 +121,7 @@ export function parse_nist(raw_nist: string): NistControl | NistRevision | null 
 
     // Next try it as a full control
     let full_match = raw_nist.match(NIST_CONTROL_RE);
-    if(!full_match) {
+    if (!full_match) {
         return null;
     }
 
@@ -138,21 +140,24 @@ export function parse_nist(raw_nist: string): NistControl | NistRevision | null 
 }
 
 /** Simple discriminators */
-export function is_control(x: NistControl | NistRevision | null): x is NistControl {
-    if(x && (x as NistControl).sub_specifiers !== undefined) {
+export function is_control(
+    x: NistControl | NistRevision | null
+): x is NistControl {
+    if (x && (x as NistControl).sub_specifiers !== undefined) {
         return true;
     }
     return false;
 }
 
 /** Simple discriminators */
-export function is_revision(x: NistControl | NistRevision | null): x is NistRevision {
-    if(x && (x as NistRevision).rev_num !== undefined) {
+export function is_revision(
+    x: NistControl | NistRevision | null
+): x is NistRevision {
+    if (x && (x as NistRevision).rev_num !== undefined) {
         return true;
     }
     return false;
 }
-
 
 /** All a control in a nist hash really needs is a status */
 export interface CategoryItemRequirements {
@@ -216,7 +221,8 @@ export type NistHierarchy = NistHierarchyNode[];
 
 function _control_parent(c: NistControl): NistControl | null {
     if (c.sub_specifiers.length) {
-        return new NistControl(c.sub_specifiers.slice(0, c.sub_specifiers.length - 1)
+        return new NistControl(
+            c.sub_specifiers.slice(0, c.sub_specifiers.length - 1)
         );
     } else {
         return null; // Can't get any shorter

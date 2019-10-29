@@ -63,11 +63,11 @@ abstract class HDFControl_1_0 implements HDFControl {
 
         // Process item by item
         this.raw_nist_tags.map(parse_nist).forEach(x => {
-            if(!x) {
+            if (!x) {
                 return;
-            } else if(is_control(x)) {
+            } else if (is_control(x)) {
                 let spec_chain = x.sub_specifiers.join("-");
-                if(!seen_specs.has(spec_chain)) {
+                if (!seen_specs.has(spec_chain)) {
                     seen_specs.add(spec_chain);
                     this._parsed_nist_tags!.push(x);
                 }
@@ -75,18 +75,20 @@ abstract class HDFControl_1_0 implements HDFControl {
                 this._parsed_nist_revision = x;
             }
         });
-        
+
         // Sort the tags
-        this._parsed_nist_tags = this._parsed_nist_tags.sort((a, b) => a.localCompare(b));
+        this._parsed_nist_tags = this._parsed_nist_tags.sort((a, b) =>
+            a.localCompare(b)
+        );
 
         // Stub if necessary
-        if(this._parsed_nist_tags.length === 0) {
+        if (this._parsed_nist_tags.length === 0) {
             this._parsed_nist_tags.push(parse_nist("UM-1") as NistControl);
         }
     }
 
     get parsed_nist_tags(): NistControl[] {
-        if(this._parsed_nist_tags === undefined) {
+        if (this._parsed_nist_tags === undefined) {
             // Do the computations now, to save time later. These are fairly expensive
             this.parse_nist();
         }
@@ -94,7 +96,7 @@ abstract class HDFControl_1_0 implements HDFControl {
     }
 
     get parsed_nist_revision(): NistRevision {
-        if(this._parsed_nist_revision === undefined) { 
+        if (this._parsed_nist_revision === undefined) {
             // Do the computations now, to save time later. These are fairly expensive
             this.parse_nist();
         }
