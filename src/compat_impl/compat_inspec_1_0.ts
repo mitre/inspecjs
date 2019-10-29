@@ -48,7 +48,7 @@ abstract class HDFControl_1_0 implements HDFControl {
     get raw_nist_tags(): string[] {
         let fetched: string[] | undefined | null = this.wraps.tags["nist"];
         if (!fetched) {
-            return [];
+            return ["UM-1"];
         } else {
             return fetched;
         }
