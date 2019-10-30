@@ -114,6 +114,9 @@ export interface HDFControl {
 
     /** Easy check if this is a profile */
     is_profile: boolean;
+
+    /** Maps string labels to description items. */
+    descriptions: {[key: string]: string};
 }
 
 /**
