@@ -174,15 +174,17 @@ abstract class HDFControl_1_0 implements HDFControl {
     abstract get segments(): HDFControlSegment[] | undefined;
     abstract get is_profile(): boolean;
 
-    descriptions: {[key: string]: string} = {};
+    descriptions: { [key: string]: string } = {};
 }
 
 export class ExecControl extends HDFControl_1_0 implements HDFControl {
     constructor(control: ResultControl_1_0) {
         super(control);
         // Build descriptions
-        if(control.descriptions) {
-            control.descriptions.forEach(x => this.descriptions[x.label] = x.label);
+        if (control.descriptions) {
+            control.descriptions.forEach(
+                x => (this.descriptions[x.label] = x.label)
+            );
         }
     }
 
@@ -227,20 +229,18 @@ export class ExecControl extends HDFControl_1_0 implements HDFControl {
     }
 
     readonly is_profile: boolean = false;
-
-    
 }
 
 export class ProfileControl extends HDFControl_1_0 implements HDFControl {
     constructor(control: ProfileControl_1_0) {
         super(control);
         // Build descriptions
-        if(control.descriptions) {
+        if (control.descriptions) {
             Object.keys(control.descriptions).forEach(key => {
-                if(typeof control.descriptions![key] === "string") {
+                if (typeof control.descriptions![key] === "string") {
                     this.descriptions[key] = control.descriptions![key];
-                } 
-            })
+                }
+            });
         }
     }
 
