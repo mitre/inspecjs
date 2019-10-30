@@ -16,15 +16,17 @@ function readFiles(
             console.log(err);
             return;
         }
+        // Sort the filenames
+        filenames = filenames.sort();
+
         filenames.forEach(function(filename) {
-            fs.readFile(dirname + filename, "utf-8", function(err, content) {
-                if (err) {
-                    console.log(`Error reading file ${filename}`);
-                    console.log(err);
-                    return;
-                }
+            try {
+                let content = fs.readFileSync(dirname + filename, "utf-8");
                 onFileContent(filename, content);
-            });
+            } catch (err) {
+                console.log(`Error reading file ${filename}`);
+                console.log(err);
+            }
         });
     });
 }
