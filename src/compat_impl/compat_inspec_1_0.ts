@@ -183,7 +183,7 @@ export class ExecControl extends HDFControl_1_0 implements HDFControl {
         // Build descriptions
         if (control.descriptions) {
             control.descriptions.forEach(
-                x => (this.descriptions[x.label] = x.label)
+                x => (this.descriptions[x.label] = x.data)
             );
         }
 
