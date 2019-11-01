@@ -1,9 +1,9 @@
 // Get filesystem
 import * as fs from "fs";
 import * as path from "path";
-import { ConversionResult, convertFile } from "../src/fileparse";
-import { ControlStatus, hdfWrapControl, HDFControl } from "../src/inspecjs";
-import { ExecJSONMin, ExecJSON } from "../src/versions/v_1_0";
+import { ConversionResult, convertFile } from "../fileparse";
+import { ControlStatus, hdfWrapControl, HDFControl } from "../inspecjs";
+import { ExecJSONMin, ExecJSON } from "../versions/v_1_0";
 
 /** Reads the contents of the given files into an array of strings. */
 function readFiles(
