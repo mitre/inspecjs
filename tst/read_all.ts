@@ -87,6 +87,7 @@ function count_exec_1_0(x: ExecJSON.Execution): Counts {
     controls = filter_overlays(controls);
 
     // Count
+    console.log(controls.filter(c => c.status === "Profile Error").map(c => c.wraps.id).sort());
     return count_hdf(controls);
 }
 

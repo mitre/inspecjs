@@ -60,6 +60,8 @@ export interface HDFControl {
 
     /**
      * Get the control status as computed for the entire control.
+     * See the below for discussion of how this should be computed.
+     * https://github.com/mitre/heimdall-vuetify/issues/57
      */
     status: ControlStatus;
 
@@ -121,6 +123,9 @@ export interface HDFControl {
 
     /** Maps string labels to description items. */
     descriptions: { [key: string]: string };
+
+    /** Returns whether this control was waived. */
+    waived: boolean;
 }
 
 /**

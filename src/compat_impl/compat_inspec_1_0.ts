@@ -152,14 +152,13 @@ abstract class HDFControl_1_0 implements HDFControl {
     get status(): ControlStatus {
         if (this.is_profile) {
             return "From Profile";
-        } else if (
-            !this.status_list ||
-            this.status_list.length === 0 ||
-            this.status_list.includes("error")
-        ) {
+        } else if (!this.status_list || this.status_list.includes("error")) {
             return "Profile Error";
-        } else if (this.wraps.impact == 0) {
+        } else if (this.waived || this.wraps.impact === 0) {
+            // We interject this between profile error conditions because an empty-result waived control is still NA
             return "Not Applicable";
+        } else if (this.status_list.length === 0) {
+            return "Profile Error";
         } else if (this.status_list.includes("failed")) {
             return "Failed";
         } else if (this.status_list.includes("passed")) {
@@ -174,6 +173,7 @@ abstract class HDFControl_1_0 implements HDFControl {
     abstract get segments(): HDFControlSegment[] | undefined;
     abstract get is_profile(): boolean;
 
+    waived: boolean = false;
     descriptions: { [key: string]: string } = {};
 }
 
@@ -185,6 +185,15 @@ export class ExecControl extends HDFControl_1_0 implements HDFControl {
             control.descriptions.forEach(
                 x => (this.descriptions[x.label] = x.label)
             );
+        }
+
+        // Check waived
+        if (
+            control.waiver_data &&
+            (!control.waiver_data.run ||
+                control.waiver_data.skipped_due_to_waiver)
+        ) {
+            this.waived = true;
         }
     }
 
@@ -214,8 +223,12 @@ export class ExecControl extends HDFControl_1_0 implements HDFControl {
 
     get segments(): HDFControlSegment[] {
         return this.typed_wrap.results.map(result => {
+            // Set status to error if backtrace is not found. Also, default no_status
+            let status: SegmentStatus = result.backtrace
+                ? "error"
+                : result.status || "no_status";
             return {
-                status: result.status || "no_status",
+                status: status,
                 message: result.message || undefined,
                 code_desc: result.code_desc,
                 skip_message: result.skip_message || undefined,
