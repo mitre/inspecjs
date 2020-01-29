@@ -57,7 +57,11 @@ abstract class HDFControl_1_0 implements HDFControl {
             case "Not Reviewed":
                 return `Automated test skipped due to known accepted condition in the control:\n\n${this.message}\n`;
             case "Not Applicable":
-                return `Justification:\n\n${this.message}\n`;
+                if("caveat" in this.descriptions) {
+                    return `Caveat:\n\n${this.message}\n`;
+                } else {
+                    return `Justification:\n\n${this.message}\n`;
+                }
             case "Profile Error":
                 if (!this.status_list || this.status_list.length === 0) {
                     return "No describe blocks were run in this control";
