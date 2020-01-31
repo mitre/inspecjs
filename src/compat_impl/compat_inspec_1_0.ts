@@ -57,7 +57,9 @@ abstract class HDFControl_1_0 implements HDFControl {
             case "Not Reviewed":
                 return `Automated test skipped due to known accepted condition in the control:\n\n${this.message}\n`;
             case "Not Applicable":
-                if("caveat" in this.descriptions) {
+                // Overlays may use "caveat" keyed text to indicate why certain
+                // controls are not applicable
+                if("caveat" in this.descriptions || "caveat" in this.wraps.tags) {
                     return `Caveat:\n\n${this.message}\n`;
                 } else {
                     return `Justification:\n\n${this.message}\n`;
