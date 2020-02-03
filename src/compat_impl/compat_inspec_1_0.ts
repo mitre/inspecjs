@@ -59,7 +59,9 @@ abstract class HDFControl_1_0 implements HDFControl {
             case "Not Applicable":
                 // Overlays may use "caveat" keyed text to indicate why certain
                 // controls are not applicable
-                if("caveat" in this.descriptions || "caveat" in this.wraps.tags) {
+                if("caveat" in this.descriptions || "caveat" in this.wraps.tags
+                    || "Caveat" in this.descriptions || "Caveat" in this.wraps.tags) 
+                {
                     return `Caveat:\n\n${this.message}\n`;
                 } else {
                     return `Justification:\n\n${this.message}\n`;
