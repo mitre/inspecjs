@@ -8,12 +8,16 @@ import * as PROFILE_JSON_1_0 from "./generated_parsers/v_1_0/profile-json";
 
 // Define our type. This is the result of trying to parse the file. The appropriate field (exactly one) will be filled
 // In case of schema version ambiguity we will use the 1.0 schema
-export interface ConversionResult {
+interface _ConversionResult {
   // 1.0 types
   "1_0_ExecJson"?: EXEC_JSON_1_0.ExecJSON;
   "1_0_ExecJsonMin"?: EXEC_JSON_MIN_1_0.ExecJsonmin;
   "1_0_ProfileJson"?: PROFILE_JSON_1_0.ProfileJSON;
-  errors?: any[];
+}
+
+export type ConversionErrors = { [K in keyof ConversionResult]?: any };
+export interface ConversionResult extends _ConversionResult {
+  errors?: ConversionErrors;
 }
 
 /**
@@ -29,12 +33,12 @@ export function convertFile(
   const result: ConversionResult = {};
 
   // 1.0
-  const errors: any[] = [];
+  const errors: ConversionErrors = {};
   try {
     result["1_0_ExecJson"] = EXEC_JSON_1_0.Convert.toExecJSON(json_text);
     return result;
   } catch (e) {
-    errors.push(e);
+    errors["1_0_ExecJson"] = e;
   }
 
   try {
@@ -43,7 +47,7 @@ export function convertFile(
     );
     return result;
   } catch (e) {
-    errors.push(e);
+    errors["1_0_ExecJsonMin"] = e;
   }
 
   try {
@@ -52,7 +56,7 @@ export function convertFile(
     );
     return result;
   } catch (e) {
-    errors.push(e);
+    errors["1_0_ProfileJson"] = e;
   }
 
   // errors.forEach(e => console.warn(e));
