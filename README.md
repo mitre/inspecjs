@@ -1,4 +1,8 @@
-# InSpecJS
+# DEPRECATED
+
+THIS REPOSITORY OF INSPECJS IS NO LONGER IN USE.
+INSPECJS HAS BEEN MIGRATED INTO A MONOREPO WITH HEIMDALL. THIS CAN BE FOUND HERE: https://github.com/mitre/heimdall2/tree/master/libs/inspecjs
+IMPORTANT: InspecJS is still independently published to NPM; however, this occurs upon each release of Heimdall 
 
 To update schemas install `quicktype` with `npm install -g quicktype` and use `npm run gen-types`
 
